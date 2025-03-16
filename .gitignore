@@ -2,3 +2,4 @@ aux
 _minted-*
 *.out
 .venv
+*.zip
