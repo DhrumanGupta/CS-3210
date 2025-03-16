@@ -3,3 +3,4 @@ _minted-*
 *.out
 .venv
 *.zip
+.DS_Store
