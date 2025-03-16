@@ -1,2 +1,4 @@
 aux
 _minted-*
+*.out
+.venv

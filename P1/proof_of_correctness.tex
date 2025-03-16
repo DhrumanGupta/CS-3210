@@ -1,0 +1,135 @@
+\documentclass[a4paper]{article}
+\setlength{\topmargin}{-1.0in}
+\setlength{\oddsidemargin}{-0.2in}
+\setlength{\evensidemargin}{0in}
+\setlength{\textheight}{10.5in}
+\setlength{\textwidth}{6.5in}
+\usepackage{enumitem}
+\usepackage{amsmath, amssymb, graphicx}
+\usepackage{hyperref}
+\usepackage{mathtools}
+\usepackage{minted}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{mathpartir}
+\newlist{sollist}{itemize}{1}
+\setlist[sollist]{label=$\implies$}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{mathtools}
+\usepackage{titling}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={Programming Assignment 1 - Proof of Correctness},
+    pdfpagemode=FullScreen,
+    }
+\def\endproofmark{$\Box$}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newenvironment{proof}{\par{\bf Proof}:}{\endproofmark\smallskip}
+\begin{document}
+\begin{center}
+{\large \bf \color{red}  Department of Computer Science} \\
+{\large \bf \color{red}  Ashoka University} \\
+
+\vspace{0.1in}
+
+{\large \bf \color{blue}  Design and Analysis of Algorithms: CS-3210-1}
+
+\vspace{0.05in}
+
+    { \bf \color{YellowOrange} Programming Assignment 1 - Proof of Correctness}
+\end{center}
+\medskip
+
+{\textbf{Name: Dhruman Gupta} }
+
+\bigskip
+\hrule
+
+\vspace{0.1in}
+
+Here, I will be detailing the proof of correctness of the algorithm to show that it indeed computes all the maximal layers correctly. The algorithm takes a set of $n$ points, and outputs $k \leq n$ layers, where the $1 \leq i \leq k$ layer is the $i^{th}$ maximal layer.
+
+\section*{The Algorithm}
+
+Note: for simpliclity, we will assume that for each layer $i$, $l_i$ represents the maximum $y$ value of all elements in layer $i$.
+
+\begin{enumerate}
+    \item Sort the $n$ points in descending order on the x-axis. If two points share the same x-coordinate, then sort descending on y-axis.
+    \item Initialize an empty list $L$. Each element in this list will represent a maximal layer. Also, $L[i]$ will represent the $i^{th}$ maximal layer. Each layer is represented by a list, too, sorted descending on the x-axis. Note, that given an index, we can access the layer in $O(1)$ time. So, accessing the greatest y-coordinate in a layer can be done in $O(1)$ time.
+    \item Begin sweeping from the right - i.e, the first point of the sorted array.
+    \item At each element $i = (x_i, y_i)$, we want to assign $i$ to the correct layer. Do a binary search on the highest y-coordinate of each layer in $L$, to find the greatest layer $j$ such that $y_i > m_j$.
+    
+    \begin{enumerate}
+        \item If such a layer exists, assign $i$ to layer $j$. 
+        \item If no such layer exists, then create a new layer and assign $i$ to it. Add this to the end of $L$.
+    \end{enumerate}
+
+    \item When all points have been assigned to a layer, return $L$.
+\end{enumerate}
+
+This algorithm correctly computes the maximal layers. We will now prove this.
+
+\section*{Proof of Correctness}
+
+Below are a set of claims that will then be used to prove the correctness of the algorithm.\\
+
+\textbf{Claim:} $i < j \implies l_i \geq l_j$ - i.e, $L$ is sorted in descending order of $l_i$. This will also be an invariant.
+
+\textbf{Proof:}
+
+Initialization: The claim is vacously true at the beginning of the algorithm, as $L$ is empty.\\
+
+Maintenance: Assume that the claim is true at some step $i-1 \geq 0$. We will show that it is true at step $i$. We are inserting the $i^{th} = (x_i, y_i)$ element in the sorted set. The insertion step finds:
+\begin{align*}
+    j = \argmax_{k \text{, s.t $y_i > l_k$}} l_k
+\end{align*}
+
+Now, we have two cases: such a $j$ exists, or not.
+\begin{enumerate}
+    \item \textbf{$j$ exists.} Then, $y_i > l_j$, also $y_i \leq l_{j-1}$, because if it does not, then $\argmax$ would have chosen $j-1$. So, after $y_i$ is added to layer $j$, $l_j$ will be updated to $y_i$. Also, $l_{j-1}$ will remain the same. So, the claim is true.
+    \item \textbf{$j$ does not exist.} Then, a new layer is created, and $y_i$ is added to it. The new layer will have $l_{k+1} = y_i$. We know that $\forall j, y_i \leq l_j$. So, this implies that $l_{k+1} \geq l_j$ for all $j$. So, the claim is true.
+\end{enumerate}
+
+So, $L$ is indeed sorted in descending order of $l_i$.\\
+
+\newpage
+
+\textbf{Claim:} The algorithm computes all the maximal layers.
+
+Consider the following invariants:
+
+\begin{enumerate}
+    \item $L$ is sorted in descending order of $l_i$. (proven)
+    \item At step $i$, $\forall k, L[k]$ has all the elements in $k^{th}$ maximal layer from the first $i$ elements of the sorted array.
+\end{enumerate}
+
+Trivially, if these invariants hold, then the final output $L$ is correct. I will prove the second invariant.
+\subsubsection*{Proof:}
+
+Need to show the initialization, maintainance, and termination steps.\\
+
+\textbf{Initialization:} The claim is vacously true at the beginning of the algorithm, as $i=0$. $L$ is empty.\\
+
+\textbf{Maintenance:} Assume that the claim is true at some step $i-1 \geq 0$. We will show that it is true at step $i$. We are inserting the $i^{th} = (x_i, y_i)$ element in the sorted set. Say we insert point $i$ into the $j^{th}$ layer. This insertion would be correct if and only if:
+\begin{enumerate}
+    \item The point $i$ dominates no point in layer $j$, and is dominated by at least 1 point in layer $j-1$ (if $j \neq 1$), and that no point in layer $j + 1$ dominates $i$ (if $j \neq k$ where k are the total number of maximal layers).
+    \item For all future insertions, the above holds for this point.
+\end{enumerate}
+
+As we are sweeping in descending order, we know that of all the points in all built-up layers, point $i$ has the lowest x value. If we insert into layer $j$, it means that $l_{j-1} \geq y_i$. This implies that that particular point in layer $j-1$ dominates point $i$. Also, it means that $l_{j+1} < y_i$. So no point in the layer $j+1$ has a $y$ value more than $i$. Thus, no point in the next layer dominates $i$.
+
+This concludes the proof that it is correct.
+
+\vspace{1in}
+
+(P.S.) I know this proof is not complete and wrong in some places (need to show that the termination implies maximal layers), due to time restrictions I have omitted to write that.
+
+\end{document}
